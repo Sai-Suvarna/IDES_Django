@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Capture Webcam Image</title>
+</head>
+<body>
+    <h1>Capture Webcam Image</h1>
+    <video id="video" width="640" height="480" autoplay></video>
+    <button id="snap">Snap Photo</button>
+    <canvas id="canvas" width="640" height="480" style="display: none;"></canvas>
+
+<script>
+      // Access the device camera and stream to video element
+const video = document.getElementById('video');
+let stream;
+
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    navigator.mediaDevices.getUserMedia({ video: true }).then(function(mediaStream) {
+        stream = mediaStream;
+        video.srcObject = stream;
+        video.play();
+    });
+}
+
+// Trigger photo take
+document.getElementById("snap").addEventListener("click", function() {
+    const canvas = document.getElementById('canvas');
+    const context = canvas.getContext('2d');
+    context.drawImage(video, 0, 0, 640, 480);
+
+    // Convert canvas to blob
+    canvas.toBlob(function(blob) {
+        // Create FormData object
+        const formData = new FormData();
+        formData.append('image', blob, 'webcam.jpg');
+
+        // Log FormData object
+        console.log('FormData:', formData);
+
+        // Send POST request to the server
+        fetch('http://127.0.0.1:8000/api/upload/', {
+            method: 'POST',
+            body: formData,
+            // No need to specify Content-Type header, FormData takes care of it
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+
+        // Stop the video stream
+        if (stream) {
+            stream.getTracks().forEach(track => {
+                track.stop();
+            });
+        }
+    }, 'image/jpeg');
+});
+
+    </script>
+</body>
+</html>
