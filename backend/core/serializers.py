@@ -11,6 +11,8 @@ class WordSerializer(serializers.ModelSerializer):
 class ImageSerializer(serializers.Serializer):
     image = serializers.ImageField()
 
+class ImageSerializer1(serializers.Serializer):
+    image = serializers.ImageField()
 
 class ProductDetailsSerializer(serializers.ModelSerializer):
     class Meta:

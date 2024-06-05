@@ -7,6 +7,8 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import status
 from core.serializers import WordSerializer
 from core.serializers import ImageSerializer
+from core.serializers import ImageSerializer1
+
 from core.serializers import ProductDetailsSerializer
 from core.models import ProductDetails
 
@@ -21,6 +23,9 @@ import PIL.Image
 import os
 import google.generativeai as genai
 
+
+import tempfile 
+from PIL import Image
 
 UPLOAD_FOLDER = 'static'
 
@@ -93,33 +98,6 @@ def display_knowledge_graph_data(data, query, upimage):
     print(unique_names)
     return results
 
-
-# def display_knowledge_graph_data1(data, query):
-#     results = []
-#     unique_names = set()  # Maintain a set of unique names
-    
-#     if "itemListElement" in data:
-#         for item in data["itemListElement"]:
-#             name = item["result"]["name"]
-#             print(name)
-#             if name.lower() == query.lower() and name not in unique_names:  # Check if the name is unique
-#                 item_image = item["result"].get("image", {}).get("contentUrl", "No image available")
-#                 description = item["result"].get("detailedDescription", {}).get("articleBody", "No detailed description available")
-
-#                 detailed_description = item["result"].get("detailedDescription", {}).get("url", "No detailed description available")
-
-#                 result_dict = {
-#                         "Name": name,
-#                         "Description": description,
-#                         "Detailed Description": detailed_description,
-#                         "item_image": item_image
-#                     }
-#                 results.append(result_dict)
-#                 unique_names.add(name)
-               
-#     print(unique_names)
-
-#     return results
 
 
 def display_knowledge_graph_data1(data, query):
@@ -359,106 +337,48 @@ def get_product_details(request, input_word):
     return Response({'matching_products': serialized_products})
 
 
-# from PIL import Image
-
-# from django.http import JsonResponse
-
-# def process_image(image):
-#     # Open the image using PIL
-#     img = Image.open(image)
-
-#     # Save the image to a temporary file
-#     with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as temp_image:
-#         temp_image_path = temp_image.name
-#         img.save(temp_image_path)
-
-#     response = model.generate_content(["Identify the only some important things that are in the image.I should have the response only consist of names of all the objects name in a single word for each one without any stopwords in the object names separated by comma in the image ", img], stream=True)
-#     response.resolve()
-#     res = response.text.split(',')
-#     res = [word.strip() for word in res if word.strip()]
-
-#     object_results = []
-#     for obj in res:
-#         data = fetch_from_knowledge_graph(obj)
-#         object_data = display_knowledge_graph_data(data, obj, temp_image_path)
-#         object_results.extend(object_data)
-
-#     # Return the processed results as a dictionary
-#     return {
-#         "res": res,
-#         "object_results": object_results,
-#     }
 
 
-from .image_processing import process_image
+#### ---- API call to get results form the image taken from camera --- ####
 
 class WebcamImageUploadView(APIView):
     parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request, *args, **kwargs):
-        serializer = ImageSerializer(data=request.data)
-        if serializer.is_valid():
-            image = serializer.validated_data['image']
-            result = process_image(image)  # Process the image
-            return JsonResponse({'result': result}, status=status.HTTP_200_OK)
-        else:
-            errors = serializer.errors
-            return JsonResponse({'errors': errors}, status=status.HTTP_400_BAD_REQUEST)
-import tempfile  # Add import for tempfile
+        print(request.FILES)
+        if not request.FILES:
+           print("No files submitted.")
+           return JsonResponse({'errors': {'image': 'No image file submitted'}}, status=status.HTTP_400_BAD_REQUEST)
+        
+        image_file = request.FILES.get('image')
+        print (image_file.name)
+        image_path = os.path.join(UPLOAD_FOLDER, 'captured_image.jpg')
 
+        # Save the image to a file
+        with open(image_path, 'wb') as f:
+            for chunk in image_file.chunks():
+                f.write(chunk)
 
-# class WebcamImageUploadView(APIView):
-#     parser_classes = [MultiPartParser, FormParser]
+        # Open the image using PIL
+        img = PIL.Image.open(image_path)
 
-#     def post(self, request, *args, **kwargs):
-#         if request.method == 'POST':
-#             # Get the uploaded image file
-#             image_file = request.FILES.get('image_file')
+        # Your image processing code here
+        response = model.generate_content(["Identify the only some important things that are in the image.I should have the response only consist of names of all the objects name in a single word for each one without any stopwords in the object names separated by comma in the image ", img], stream=True)
+        response.resolve()
 
-#             # Check if image_file is None
-#             if image_file is None:
-#                 return Response({"error": "No image file uploaded"}, status=status.HTTP_400_BAD_REQUEST)
+        res = response.text.split(',')
+        res = [word.strip() for word in res if word.strip()]
 
-#             # Save the image to a temporary file
-#             with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as temp_image:
-#                 for chunk in image_file.chunks():
-#                     temp_image.write(chunk)
-#                 temp_image_path = temp_image.name
+        object_results = []
+        for obj in res:
+            data = fetch_from_knowledge_graph(obj)
+            object_data = display_knowledge_graph_data(data, obj, image_path)
+            object_results.extend(object_data)
 
-#             # Open the image using PIL
-#             img = PIL.Image.open(temp_image_path)
-
-#             # Process the image
-#             result = process_image(img)  # Implement your image processing function
-
-#             # Perform additional processing (e.g., with machine learning model)
-#             # Replace the code below with your actual processing logic
-#             response = model.generate_content(["Identify the only some important things that are in the image.I should have the response only consist of names of all the objects name in a single word for each one without any stopwords in the object names separated by comma in the image ", img], stream=True)
-#             response.resolve()
-#             res = response.text.split(',')
-#             res = [word.strip() for word in res if word.strip()]
-
-#             object_results = []
-#             for obj in res:
-#                 data = fetch_from_knowledge_graph(obj)
-#                 object_data = display_knowledge_graph_data(data, obj, temp_image_path)
-#                 object_results.extend(object_data)
-
-#             # Delete the temporary image file
-#             os.unlink(temp_image_path)
-
-#             # Save the image path to the database
-#             image_instance = ImageModel.objects.create(image='captured_image.jpg')
-
-#             # Return the processed results
-#             return JsonResponse({
-#                 "result": result,
-#                 "res": res,
-#                 "object_results": object_results,
-#             })
-
-#         else:
-#             return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        return JsonResponse({
+            "res": res,
+            "object_results": object_results,
+        })
 
 
 
@@ -467,3 +387,6 @@ from rest_framework import generics
 class ProductDetailsList(generics.ListAPIView):
     queryset = ProductDetails.objects.all()
     serializer_class = ProductDetailsSerializer
+
+
+
