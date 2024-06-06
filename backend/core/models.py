@@ -1,5 +1,7 @@
 # models.py
 from django.db import models
+from django.utils import timezone
+
 
 class Word(models.Model):
     word = models.CharField(max_length=100)
@@ -25,3 +27,16 @@ class ProductDetails(models.Model):
 
     class Meta:
         db_table = 'productDetails'
+
+
+
+class RequestDetails(models.Model):
+    username = models.CharField(max_length=255)
+    itemname = models.CharField(max_length=255)
+    description = models.TextField()
+    required_quantity = models.IntegerField()
+    image = models.JSONField()
+    time = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return self.itemname

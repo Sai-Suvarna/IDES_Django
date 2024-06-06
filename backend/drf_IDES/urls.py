@@ -1,13 +1,15 @@
 from django.contrib import admin
 from django.urls import path, include
-from django.views.generic import RedirectView
-# from core.views import WebcamImageUploadView
 
+from rest_framework.routers import DefaultRouter
+from core.views import RequestDetailsView
 
+router = DefaultRouter()
+router.register(r'request-details', RequestDetailsView, basename='requestdetails')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('core.urls')),  # Include app URLs from core
-    # path('api/upload/', WebcamImageUploadView.as_view(), name='webcam-image-upload'),
-    # path('', RedirectView.as_view(url='/api/process-word/', permanent=True)),  # Redirect root to API
+    path('api/', include(router.urls)),  # Include the router's URLs
 ]
+

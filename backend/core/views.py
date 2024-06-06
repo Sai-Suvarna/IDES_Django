@@ -4,6 +4,10 @@ from rest_framework.response import Response
 from django.http import JsonResponse
 from rest_framework.parsers import JSONParser
 from rest_framework.parsers import MultiPartParser, FormParser
+
+from rest_framework_json_api.views import RelationshipView
+from rest_framework_json_api.views import ModelViewSet
+
 from rest_framework import status
 from core.serializers import WordSerializer
 from core.serializers import ImageSerializer
@@ -26,6 +30,10 @@ import google.generativeai as genai
 
 import tempfile 
 from PIL import Image
+
+from core.models import RequestDetails
+from core.serializers import RequestDetailsSerializer
+
 
 UPLOAD_FOLDER = 'static'
 
@@ -389,4 +397,56 @@ class ProductDetailsList(generics.ListAPIView):
     serializer_class = ProductDetailsSerializer
 
 
+##### ---- API call for storing the request data  ---- ####
 
+# class RequestDetailsView(APIView):
+#     def post(self, request, *args, **kwargs):
+#         serializer = RequestDetailsSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class RequestDetailsView(ModelViewSet):
+    queryset = RequestDetails.objects.all()
+    serializer_class = RequestDetailsSerializer
+
+
+# class RequestDetailsView(APIView):
+#     def post(self, request):
+#         serializer = RequestDetailsSerializer(data=request.data)
+#         print(serializer)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# @api_view(['POST'])
+# def create_request_detail(request):
+#     data = request.data.get('data', {})  # Extract the 'data' field from the payload
+#     print(data)
+#     data_type = data.get('type', None)   # Extract the 'type' field from 'data'
+    
+#     if data_type != 'create_request_detail':
+#         # If the type doesn't match, return an error response
+#         return Response(
+#             {"errors": [{"detail": "Incorrect resource type. Expected 'create_request_detail'."}]},
+#             status=status.HTTP_409_CONFLICT
+#         )
+
+#     # If the type matches, continue with creating the object
+#     serializer = RequestDetailsSerializer(data=data.get('attributes', {}))
+#     if serializer.is_valid():
+#         serializer.save()
+#         return Response(serializer.data, status=status.HTTP_201_CREATED)
+#     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+##### ---- API call for retrieving the request data ---- ####
+
+from rest_framework import generics
+
+class RequestDetailsListView(generics.ListAPIView):
+    queryset = RequestDetails.objects.all()
+    serializer_class = RequestDetailsSerializer
