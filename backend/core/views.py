@@ -35,24 +35,32 @@ from core.models import RequestDetails
 from core.serializers import RequestDetailsSerializer
 
 
+from dotenv import load_dotenv
+load_dotenv()
+
 UPLOAD_FOLDER = 'static'
 
 
-# Function to configure the Google API key
-def configure_google_api(api_key):
-    genai.configure(api_key=api_key)
+GOOGLE_API_KEY=os.getenv("GOOGLE_API_KEY")
+
+genai.configure(api_key=GOOGLE_API_KEY)
+
+
+
+# # Function to configure the Google API key
+# def configure_google_api(api_key):
+#     genai.configure(api_key=api_key)
 
 
 # Load the environment variables
 # Configure the Google API key
-api_key = os.getenv('GOOGLE_API_KEY')
-if not api_key:
-    raise RuntimeError("GOOGLE_API_KEY environment variable not set")
-configure_google_api(api_key)
+# api_key = os.getenv('GOOGLE_API_KEY')
+# if not api_key:
+#     raise RuntimeError("GOOGLE_API_KEY environment variable not set")
+# configure_google_api(api_key)
 
 
 # GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-UPLOAD_FOLDER = 'static'
 
 model = genai.GenerativeModel('gemini-1.5-flash')
 
