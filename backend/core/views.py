@@ -11,7 +11,6 @@ from rest_framework_json_api.views import ModelViewSet
 from rest_framework import status
 from core.serializers import WordSerializer
 from core.serializers import ImageSerializer
-from core.serializers import ImageSerializer1
 
 from core.serializers import ProductDetailsSerializer
 from core.models import ProductDetails
@@ -41,26 +40,26 @@ load_dotenv()
 UPLOAD_FOLDER = 'static'
 
 
-GOOGLE_API_KEY=os.getenv("GOOGLE_API_KEY")
+# GOOGLE_API_KEY=os.getenv("GOOGLE_API_KEY")
 
-genai.configure(api_key=GOOGLE_API_KEY)
+# genai.configure(api_key=GOOGLE_API_KEY)
 
 
 
-# # Function to configure the Google API key
-# def configure_google_api(api_key):
-#     genai.configure(api_key=api_key)
+# Function to configure the Google API key
+def configure_google_api(api_key):
+    genai.configure(api_key=api_key)
 
 
 # Load the environment variables
 # Configure the Google API key
-# api_key = os.getenv('GOOGLE_API_KEY')
-# if not api_key:
-#     raise RuntimeError("GOOGLE_API_KEY environment variable not set")
-# configure_google_api(api_key)
+api_key = os.getenv('GOOGLE_API_KEY')
+if not api_key:
+    raise RuntimeError("GOOGLE_API_KEY environment variable not set")
+configure_google_api(api_key)
 
 
-# GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 model = genai.GenerativeModel('gemini-1.5-flash')
 
@@ -153,28 +152,6 @@ def display_knowledge_graph_data1(data, query):
     
     return results
 
-##### ---  API call for input word without database ---####
-
-# class ProcessWordView(APIView):
-#     parser_classes = [JSONParser]  # Add JSONParser to handle JSON input
-
-#     def get(self, request, *args, **kwargs):
-#         return Response({"message": "Please use POST method to submit a word."}, status=status.HTTP_200_OK)
-
-#     def post(self, request, *args, **kwargs):
-#         serializer = WordSerializer(data=request.data)
-#         if serializer.is_valid():
-#             word_instance = serializer.save()
-#             search_word = word_instance.word
-#             object_results = []
-
-#             # Fetch data from the knowledge graph
-#             data = fetch_from_knowledge_graph(search_word)
-#             object_data = display_knowledge_graph_data1(data, search_word)
-#             object_results.extend(object_data)
-
-#             return Response({"object_results": object_results}, status=status.HTTP_200_OK)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 #### --- API call for input word with database --- ####
 
@@ -214,52 +191,6 @@ class ProcessWordView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
-##### ---  API call for image upload without database ---####
-
-# class UploadImageView(APIView):
-#     parser_classes = (MultiPartParser, FormParser)
-
-    # def post(self, request):
-    #     image_file = request.FILES.get('image')
-    #     if image_file:
-    #         filename = str(uuid.uuid4()) + os.path.splitext(image_file.name)[-1]
-    #         save_path = os.path.join(UPLOAD_FOLDER, filename)
-
-    #         if not os.path.exists(UPLOAD_FOLDER):
-    #             os.makedirs(UPLOAD_FOLDER)
-
-    #         with open(save_path, "wb") as image:
-    #             for chunk in image_file.chunks():
-    #                 image.write(chunk)
-
-    #         img = PIL.Image.open(save_path)
-
-    #         # Your image processing code here
-    #         response = model.generate_content(["""Identify the only some important things that are in the image.If any machinery parts, hardware tools, or components are detected, provide their specific names of each object without any stopwords
-    #         . I should have the response only consist of names of all the objects name in a single word for each one without any stopwords in the object names separated by comma in the image""", img], stream=True)            
-
-    #         response.resolve()
-
-    #         res = response.text.split(',')
-    #         res = [word.strip() for word in res if word.strip()]
-
-    #         object_results = []
-    #         for obj in res:
-    #             data = fetch_from_knowledge_graph(obj)
-    #             object_data = display_knowledge_graph_data(data, obj, save_path)
-    #             object_results.extend(object_data)
-
-    #         # Save the recognized words to the database
-    #         for word in res:
-    #             Word.objects.create(word=word)
-
-    #         return Response({
-    #             "res": res,
-    #             "object_results": object_results,
-    #         }, status=status.HTTP_201_CREATED)
-    #     else:
-    #         return Response({"error": "No image provided."}, status=status.HTTP_400_BAD_REQUEST)
 
 ##### ---  API call for image upload with database ---####
 
@@ -407,48 +338,9 @@ class ProductDetailsList(generics.ListAPIView):
 
 ##### ---- API call for storing the request data  ---- ####
 
-# class RequestDetailsView(APIView):
-#     def post(self, request, *args, **kwargs):
-#         serializer = RequestDetailsSerializer(data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 class RequestDetailsView(ModelViewSet):
     queryset = RequestDetails.objects.all()
     serializer_class = RequestDetailsSerializer
-
-
-# class RequestDetailsView(APIView):
-#     def post(self, request):
-#         serializer = RequestDetailsSerializer(data=request.data)
-#         print(serializer)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-# @api_view(['POST'])
-# def create_request_detail(request):
-#     data = request.data.get('data', {})  # Extract the 'data' field from the payload
-#     print(data)
-#     data_type = data.get('type', None)   # Extract the 'type' field from 'data'
-    
-#     if data_type != 'create_request_detail':
-#         # If the type doesn't match, return an error response
-#         return Response(
-#             {"errors": [{"detail": "Incorrect resource type. Expected 'create_request_detail'."}]},
-#             status=status.HTTP_409_CONFLICT
-#         )
-
-#     # If the type matches, continue with creating the object
-#     serializer = RequestDetailsSerializer(data=data.get('attributes', {}))
-#     if serializer.is_valid():
-#         serializer.save()
-#         return Response(serializer.data, status=status.HTTP_201_CREATED)
-#     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 ##### ---- API call for retrieving the request data ---- ####

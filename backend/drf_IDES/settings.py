@@ -6,7 +6,6 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
@@ -28,6 +27,9 @@ INSTALLED_APPS = [
     'rest_framework', #DRF package
     'core', # New app
 ]
+
+
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -63,16 +65,6 @@ WSGI_APPLICATION = 'drf_IDES.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'IDES_ProductDetails',
-#         'HOST': '127.0.0.1',
-#         'PORT': '3306',
-#         'USER': 'suvarna',
-#         'PASSWORD': 'suvarna',
-#     }
-# }
 
 import os
 
@@ -86,8 +78,6 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT', '3306'),
     }
 }
-
-
 
 
 
@@ -127,9 +117,6 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
-# STATIC_URL = '/static/'
-
-# Add this at the end of the file
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 STATIC_URL = '/static/'

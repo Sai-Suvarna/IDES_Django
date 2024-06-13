@@ -11,8 +11,6 @@ class WordSerializer(serializers.ModelSerializer):
 class ImageSerializer(serializers.Serializer):
     image = serializers.ImageField()
 
-class ImageSerializer1(serializers.Serializer):
-    image = serializers.ImageField()
 
 class ProductDetailsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -25,10 +23,5 @@ class RequestDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = RequestDetails
         fields = '__all__'
-        resource_name = 'requestDetails'  # Ensure the resource name is defined
+        resource_name = 'requestDetails'  
 
-# class RequestDetailsSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = RequestDetails
-#         # resource_name = 'requestDetails'
-#         fields = '__all__'
