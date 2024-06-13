@@ -60,11 +60,13 @@ configure_google_api(api_key)
 
 
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+GOOGLE_API_KEY1 = os.getenv("GOOGLE_API_KEY1")
+
 
 model = genai.GenerativeModel('gemini-1.5-flash')
 
 def fetch_from_knowledge_graph(query):
-    # api_key = GOOGLE_API_KEY
+    api_key = GOOGLE_API_KEY1
     api_endpoint = "https://kgsearch.googleapis.com/v1/entities:search"
     params = {
         "query": query,
